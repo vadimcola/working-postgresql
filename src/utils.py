@@ -36,14 +36,14 @@ def getting_vacancies(index):
 
 def getting_json_employer(keyword):
     data = getting_employer(keyword)
-    with open('employer.json', 'w', encoding='utf-8') as file:
+    with open('src/employer.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
         print("Данные выгружены!!!")
 
 
 def getting_json_vacancies(keyword):
     data = getting_vacancies(employer_id(keyword))
-    with open('vacancies.json', 'w', encoding='utf-8') as file:
+    with open('src/vacancies.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
         print("Данные выгружены!!!")
 
@@ -87,4 +87,25 @@ def create_database(database_name: str, params: dict):
     conn.commit()
     conn.close()
 
-def save_data_to_database(data, database_name, params)
+def save_data_to_database_emp(database_name: str, params: dict):
+    conn = psycopg2.connect(dbname=database_name, **params)
+    with conn.cursor() as cur:
+        with open('src/employer.json', 'r', encoding='utf-8') as file:
+            employer = json.load(file)
+            for emp in employer:
+                name = emp['name']
+                url_employer = emp['alternate_url']
+                open_vacancies = emp['open_vacancies']
+                cur.execute(
+                    """
+                    INSERT INTO employers (name, url_employer, open_vacancies)
+                    VALUES (%s, %s, %s)
+                    RETURNING id_employer
+                    """,
+                    (name, url_employer, open_vacancies)
+                )
+
+    conn.commit()
+    conn.close()
+
+
