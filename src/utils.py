@@ -75,7 +75,6 @@ def create_database(database_name: str, params: dict):
     with conn.cursor() as cur:
         cur.execute("""CREATE TABLE vacancies (
                     id_vacancy SERIAL PRIMARY KEY,
-                    id_employer INT REFERENCES employers(id_employer),
                     name_employer VARCHAR(255) NOT NULL,
                     name_vacancy VARCHAR(255) NOT NULL,
                     salary_from INTEGER,
@@ -100,7 +99,6 @@ def save_data_to_database_emp(database_name: str, params: dict):
                     """
                     INSERT INTO employers (name, url_employer, open_vacancies)
                     VALUES (%s, %s, %s)
-                    RETURNING id_employer
                     """,
                     (name, url_employer, open_vacancies)
                 )
@@ -109,3 +107,38 @@ def save_data_to_database_emp(database_name: str, params: dict):
     conn.close()
 
 
+def save_data_to_database_vac(database_name: str, params: dict):
+    conn = psycopg2.connect(dbname=database_name, **params)
+    with conn.cursor() as cur:
+        with open('src/vacancies.json', 'r', encoding='utf-8') as file:
+            vacancies = json.load(file)
+            for vac in vacancies:
+                name_employer = vac['employer']['name']
+                name_vacancy = vac['name']
+                if vac['salary'] is None:
+                    salary_from = 0
+                    salary_to = 0
+                else:
+                    salary_from = vac['salary']['from']
+                    if salary_from is None:
+                        salary_from = 0
+                    else:
+                        salary_from
+                    salary_to = vac['salary']['to']
+                    if salary_to is None:
+                        salary_to = 0
+                    else:
+                        salary_to
+                url_vacancy = vac['alternate_url']
+                cur.execute(
+                    """
+                    INSERT INTO vacancies (name_employer, name_vacancy, salary_from, salary_to,
+                    url_vacancy)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (name_employer, name_vacancy, salary_from, salary_to,
+                    url_vacancy)
+                )
+
+    conn.commit()
+    conn.close()
