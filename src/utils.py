@@ -1,6 +1,8 @@
 import json
-
+import psycopg2
 import requests as requests
+
+from config import config
 
 
 def getting_employer(keyword: str):
@@ -45,3 +47,44 @@ def getting_json_vacancies(keyword):
         json.dump(data, file, indent=4, ensure_ascii=False)
         print("Данные выгружены!!!")
 
+
+def create_database(database_name: str, params: dict):
+    """Создание базы данных и таблиц для сохранения данных."""
+
+    conn = psycopg2.connect(dbname='postgres', **params)
+    conn.autocommit = True
+    cur = conn.cursor()
+
+    cur.execute(f"DROP DATABASE IF EXISTS {database_name}")
+    cur.execute(f"CREATE DATABASE {database_name}")
+
+    cur.close()
+    conn.close()
+
+    conn = psycopg2.connect(dbname=database_name, **params)
+
+    with conn.cursor() as cur:
+        cur.execute("""CREATE TABLE employers (
+                    id_employer SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    url_employer TEXT,
+                    open_vacancies INTEGER
+                )
+            """)
+
+    with conn.cursor() as cur:
+        cur.execute("""CREATE TABLE vacancies (
+                    id_vacancy SERIAL PRIMARY KEY,
+                    id_employer INT REFERENCES employers(id_employer),
+                    name_employer VARCHAR(255) NOT NULL,
+                    name_vacancy VARCHAR(255) NOT NULL,
+                    salary_from INTEGER,
+                    salary_to INTEGER,
+                    url_vacancy TEXT
+                )
+            """)
+
+    conn.commit()
+    conn.close()
+
+def save_data_to_database(data, database_name, params)
