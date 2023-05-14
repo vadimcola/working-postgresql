@@ -6,6 +6,8 @@ from config import config
 
 
 def getting_employer(keyword: str):
+    """ Выгрузка списка работодателей с помощью API подключения к сайту hh.ru"""
+
     params = {'text': keyword,
               'per_page': 10,
               'only_with_vacancies': True
@@ -17,6 +19,8 @@ def getting_employer(keyword: str):
 
 
 def employer_id(keyword):
+    '''получение  ID работодателей'''
+
     employer_list = []
     employers = getting_employer(keyword)
     for emp in employers:
@@ -25,6 +29,9 @@ def employer_id(keyword):
 
 
 def getting_vacancies(index):
+    """Выгрузка списка вакансий выбраных работодателей
+     с помощью API подключения к сайту hh.ru"""
+
     params = {'employer_id': index,
               'per_page': 100,
               }
@@ -35,6 +42,8 @@ def getting_vacancies(index):
 
 
 def getting_json_employer(keyword):
+    """Выгрузка данных о работодателях в файл JSON"""
+
     data = getting_employer(keyword)
     with open('src/employer.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
@@ -42,6 +51,8 @@ def getting_json_employer(keyword):
 
 
 def getting_json_vacancies(keyword):
+    """Выгрузка данных о вакансиях в файл JSON"""
+
     data = getting_vacancies(employer_id(keyword))
     with open('src/vacancies.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
@@ -86,7 +97,10 @@ def create_database(database_name: str, params: dict):
     conn.commit()
     conn.close()
 
+
 def save_data_to_database_emp(database_name: str, params: dict):
+    """Заполнение БД данными о работодателях из json файла """
+
     conn = psycopg2.connect(dbname=database_name, **params)
     with conn.cursor() as cur:
         with open('src/employer.json', 'r', encoding='utf-8') as file:
@@ -108,6 +122,8 @@ def save_data_to_database_emp(database_name: str, params: dict):
 
 
 def save_data_to_database_vac(database_name: str, params: dict):
+    """Заполнение БД данными о вакансиях из json файла """
+
     conn = psycopg2.connect(dbname=database_name, **params)
     with conn.cursor() as cur:
         with open('src/vacancies.json', 'r', encoding='utf-8') as file:
@@ -137,7 +153,7 @@ def save_data_to_database_vac(database_name: str, params: dict):
                     VALUES (%s, %s, %s, %s, %s)
                     """,
                     (name_employer, name_vacancy, salary_from, salary_to,
-                    url_vacancy)
+                     url_vacancy)
                 )
 
     conn.commit()
