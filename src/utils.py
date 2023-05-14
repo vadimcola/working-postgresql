@@ -38,14 +38,14 @@ def getting_json_employer(keyword):
     data = getting_employer(keyword)
     with open('src/employer.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
-        print("Данные выгружены!!!")
+        print("Данные о работодателях выгружены!!!")
 
 
 def getting_json_vacancies(keyword):
     data = getting_vacancies(employer_id(keyword))
     with open('src/vacancies.json', 'w', encoding='utf-8') as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
-        print("Данные выгружены!!!")
+        print("Данные о вакансиях выгружены!!!")
 
 
 def create_database(database_name: str, params: dict):
